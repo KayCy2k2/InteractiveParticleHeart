@@ -17,11 +17,41 @@
   </style>
 </head>
 <body>
+  <!-- Canvas hiệu ứng -->
   <canvas id="particleCanvas"></canvas>
+
+  <!-- Nhạc nền lãng mạn -->
+  <audio id="bgMusic" autoplay loop>
+    <source src="chonology-of-love-6094.mp3" type="audio/mpeg">
+    Trình duyệt của bạn không hỗ trợ phát nhạc.
+  </audio>
+  <button id="playMusicBtn" style="
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  font-size: 18px;
+  z-index: 10;
+  cursor: pointer;
+">
+  🎵 Phát nhạc
+</button>
 
   <script>
     const canvas = document.getElementById("particleCanvas");
     const ctx = canvas.getContext("2d");
+        // Phát nhạc sau lần click đầu tiên
+    const bgMusic = document.getElementById("bgMusic");
+    let musicStarted = false;
+
+    canvas.addEventListener("click", () => {
+    if (!musicStarted) {
+        bgMusic.play().catch((e) => console.log("Tự động phát bị chặn:", e));
+        musicStarted = true;
+    }
+    });
+
 
     const messages = ["I LOVE YOU", "FOREVER", "HAPPY DAY"];
     let currentTextIndex = 0;
@@ -76,20 +106,28 @@
     }
 
     function drawHeart(ctx, x, y, size) {
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.bezierCurveTo(x - size / 2, y - size / 2, x - size, y + size / 3, x, y + size);
-      ctx.bezierCurveTo(x + size, y + size / 3, x + size / 2, y - size / 2, x, y);
-      ctx.closePath();
-
-      // Tạo màu chuyển động nhẹ
-      const r = 200 + Math.sin(x * 0.01) * 55;
-      const g = 50 + Math.cos(y * 0.01) * 100;
-      const b = 200 + Math.sin((x + y) * 0.01) * 55;
-      ctx.fillStyle = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
-      ctx.fill();
-    }
-
+        ctx.save(); // Lưu trạng thái trước khi vẽ
+      
+        // Tạo màu chuyển động nhẹ
+        const r = 200 + Math.sin(x * 0.01) * 55;
+        const g = 50 + Math.cos(y * 0.01) * 100;
+        const b = 200 + Math.sin((x + y) * 0.01) * 55;
+        const color = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+      
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = color;
+        ctx.fillStyle = color;
+      
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.bezierCurveTo(x - size / 2, y - size / 2, x - size, y + size / 3, x, y + size);
+        ctx.bezierCurveTo(x + size, y + size / 3, x + size / 2, y - size / 2, x, y);
+        ctx.closePath();
+        ctx.fill();
+      
+        ctx.restore(); // Phục hồi trạng thái vẽ cũ
+      }
+      
     for (let i = 0; i < numParticles; i++) {
       const size = Math.random() * 7 + 3;
       particles.push({
@@ -165,9 +203,17 @@
       heartPoints.push(...generateHeartShape());
       textPoints.push(...generateTextPoints(messages[currentTextIndex], canvas.width / 2, canvas.height / 2, Math.min(60, canvas.width / 15)));
     });
+    document.getElementById("playMusicBtn").addEventListener("click", () => {
+        bgMusic.play().then(() => {
+          document.getElementById("playMusicBtn").style.display = "none";
+        }).catch((e) => {
+          alert("Không thể phát nhạc: " + e);
+        });
+      });
+      
 
-    // Tự động chuyển trạng thái mỗi 10 giây
-    setInterval(toggleState, 3000);
+    // Tự động chuyển trạng thái mỗi 3 giây
+    //setInterval(toggleState, 3000);
   </script>
 </body>
 </html>
